@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.presentacion"
+    namespace = "com.example.srodenas.buttondescribe"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.presentacion"
+        applicationId = "com.example.srodenas.buttondescribe"
         minSdk = 26
         targetSdk = 33
         versionCode = 1
@@ -32,6 +32,12 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+
+
+
+    viewBinding{
+        enable = true
     }
 }
 

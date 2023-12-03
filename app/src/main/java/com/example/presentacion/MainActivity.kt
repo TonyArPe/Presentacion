@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.widget.ImageButton
+import com.example.srodenas.buttondescribe.R
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -18,6 +19,7 @@ class MainActivity : AppCompatActivity() {
         val botonInternet = findViewById<ImageButton>(R.id.botonInternet)
         val botonSalir = findViewById<ImageButton>(R.id.botonSalir)
         val botonFavoritos = findViewById<ImageButton>(R.id.botonFavoritos)
+        val botonJuego = findViewById<ImageButton>(R.id.btnJuego)
 
         botonLLamar.setOnClickListener {
             val intent = Intent(this, LLamada::class.java)
@@ -25,6 +27,11 @@ class MainActivity : AppCompatActivity() {
         }
         btnMusica.setOnClickListener {
             val intent = Intent(this, Musica::class.java)
+            startActivity(intent)
+        }
+
+        botonJuego.setOnClickListener{
+            val intent = Intent(this, Juego::class.java)
             startActivity(intent)
         }
 
