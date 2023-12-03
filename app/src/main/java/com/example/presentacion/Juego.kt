@@ -1,11 +1,14 @@
 package com.example.presentacion
 
+import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.view.View
+import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.srodenas.buttondescribe.R
@@ -17,16 +20,44 @@ import kotlin.random.Random
 
 class Juego : AppCompatActivity() {
 
+    companion object {
+        private const val KEY_NUMBER_OF_THROWS = "numberOfThrows"
+        private const val DEFAULT_NUMBER_OF_THROWS = 5
+    }
+
     private lateinit var bindingDados: JuegoActivityBinding
     private val results = mutableListOf<List<Int>>()
     private lateinit var textToSpeech: TextToSpeech
+    private lateinit var btnSettings: ImageButton
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bindingDados = JuegoActivityBinding.inflate(layoutInflater)
         setContentView(bindingDados.root)
+        bindingDados.botonSettings.setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+        }
         initEvent()
         initTextToSpeech()
+        initSharedPreferences()
+    }
+
+    private fun initSharedPreferences() {
+        sharedPreferences = getPreferences(MODE_PRIVATE)
+        val numberOfThrows = getNumberOfThrows()
+        bindingDados.txtResultado.text = "Numero de tiradas: $numberOfThrows\n"
+    }
+
+    private fun saveNumberOfThrows(numberOfThrows: Int) {
+        val editor = sharedPreferences.edit()
+        editor.putInt(KEY_NUMBER_OF_THROWS, numberOfThrows)
+        editor.apply()
+    }
+
+    private fun getNumberOfThrows(): Int {
+        return sharedPreferences.getInt(KEY_NUMBER_OF_THROWS, DEFAULT_NUMBER_OF_THROWS)
     }
 
     private fun initEvent() {
@@ -74,9 +105,10 @@ class Juego : AppCompatActivity() {
     private fun startGame() {
         results.clear()
 
+        val numberOfThrows = getNumberOfThrows()
         val schedulerExecutor = Executors.newSingleThreadScheduledExecutor()
         val msc = 1000
-        for (i in 1..5) {
+        for (i in 1..numberOfThrows) {
             schedulerExecutor.schedule(
                 {
                     throwDadoInTime()
@@ -88,9 +120,8 @@ class Juego : AppCompatActivity() {
 
         schedulerExecutor.schedule({
             displayFinalResult()
-        }, msc * 6.toLong(), TimeUnit.MILLISECONDS)
-
-        schedulerExecutor.shutdown()
+            schedulerExecutor.shutdown()
+        }, msc * (numberOfThrows + 1).toLong(), TimeUnit.MILLISECONDS)
     }
 
     private fun throwDadoInTime() {
@@ -123,7 +154,7 @@ class Juego : AppCompatActivity() {
             val lastTotal = lastResult.sum()
             val chiste = contarChiste(lastTotal)
 
-            bindingDados.txtResultado.append("\nTotal de la última tirada: $lastTotal\n$chiste")
+            bindingDados.txtResultado.append("\nTotal: $lastTotal\n$chiste")
             decirChiste(chiste)
         }, 1000)
     }
@@ -269,7 +300,7 @@ class Juego : AppCompatActivity() {
         if (results.isNotEmpty()) {
             val lastResult = results.last()
             val lastTotal = lastResult.sum()
-            textToSpeech.speak("Total de la última tirada: ${lastTotal.toString()}", TextToSpeech.QUEUE_FLUSH, null, null)
+            textToSpeech.speak("Total: ${lastTotal.toString()}", TextToSpeech.QUEUE_FLUSH, null, null)
         }
 
         textToSpeech.speak(chiste, TextToSpeech.QUEUE_ADD, null, null)
@@ -285,6 +316,7 @@ class Juego : AppCompatActivity() {
             6 -> imgV.setImageResource(R.drawable.dado6)
         }
     }
+
 
     override fun onDestroy() {
         super.onDestroy()
